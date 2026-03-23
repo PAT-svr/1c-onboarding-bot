@@ -1,37 +1,32 @@
 import asyncio
 import logging
+import os
 
-from aiogram import Bot, Dispatcher, types
-from aiogram.filters.command import Command
+from aiogram import Bot, Dispatcher
+from dotenv import load_dotenv
 
-# ВАЖНО! Вставьте сюда ваш токен, полученный от @BotFather
-BOT_TOKEN = "8417732382:AAG47ddZZ2xEgywfAV39Kle_eIc34GzOFeM"
+from bot.handlers import router
+from bot.logger import setup_logging
 
-# Включаем логирование, чтобы не пропустить важные сообщения
-logging.basicConfig(level=logging.INFO)
+load_dotenv()
+setup_logging()
+logger = logging.getLogger(__name__)
 
-# Объект бота
-bot = Bot(token=BOT_TOKEN)
-# Диспетчер
-dp = Dispatcher()
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 
-# Хэндлер на команду /start
-@dp.message(Command("start"))
-async def cmd_start(message: types.Message):
-    await message.answer("Привет! Я эхо-бот. Отправь мне любое сообщение, и я его повторю.")
 
-# Хэндлер на остальные текстовые сообщения
-@dp.message()
-async def echo_handler(message: types.Message):
-    await message.answer(f"Я получил твое сообщение: {message.text}")
-
-# Запуск процесса поллинга новых апдейтов
 async def main():
-    # Удаляем вебхук и пропускаем накопившиеся входящие сообщения
+    if not TELEGRAM_TOKEN:
+        raise ValueError("TELEGRAM_TOKEN не задан в файле .env")
+
+    bot = Bot(token=TELEGRAM_TOKEN)
+    dp = Dispatcher()
+    dp.include_router(router)
+
+    logger.info("Бот запускается...")
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
 
 if __name__ == "__main__":
     asyncio.run(main())
-
