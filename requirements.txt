@@ -7,5 +7,6 @@ langchain-community
 langchain-text-splitters
 sentence-transformers
 pypdf
+pymupdf
 python-docx
 docx2txt

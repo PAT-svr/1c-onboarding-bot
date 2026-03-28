@@ -4,9 +4,10 @@ import os
 import chromadb
 from chromadb.utils import embedding_functions
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import Docx2txtLoader, PyPDFLoader
+from langchain_community.document_loaders import Docx2txtLoader, PyPDFLoader, TextLoader
 
 KNOWLEDGE_BASE_PATH = "./knowledge_base"
+PARSED_DOCS_PATH = "./parsed_docs"
 CHROMA_PATH = "./chroma_db"
 COLLECTION_NAME = "1c_knowledge_base"
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
@@ -28,6 +29,12 @@ def load_documents():
     for path in docx_files:
         print(f"Загружаю DOCX: {path}")
         loader = Docx2txtLoader(path)
+        documents.extend(loader.load())
+
+    txt_files = glob.glob(os.path.join(PARSED_DOCS_PATH, "**/*.txt"), recursive=True)
+    for path in txt_files:
+        print(f"Загружаю TXT (parsed): {path}")
+        loader = TextLoader(path, encoding="utf-8")
         documents.extend(loader.load())
 
     return documents
