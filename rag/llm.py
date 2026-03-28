@@ -15,12 +15,15 @@ logger = logging.getLogger(__name__)
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 MODELS = [
+    "nvidia/nemotron-3-super-120b-a12b:free",
+    "arcee-ai/trinity-large-preview:free",
+    "liquid/lfm-2.5-1.2b-thinking:free",
+    "qwen/qwen3-next-80b-a3b-instruct:free",
+    "openai/gpt-oss-120b:free",
     "openai/gpt-oss-20b:free",
-    "mistralai/mistral-small-3.1-24b-instruct:free",
-    "google/gemma-3-4b-it:free",
-    "stepfun/step-3.5-flash:free",
-    "z-ai/glm-4.5-air:free",
 ]
+MAX_RETRIES = 3
+RETRY_DELAY = 10  # секунд между попытками
 
 SYSTEM_PROMPT = """Ты — корпоративный ассистент по работе с 1С ERP. Помогаешь новым сотрудникам разобраться в системе.
 
@@ -70,17 +73,20 @@ async def ask(user_question: str) -> str:
     ]
 
     for model in MODELS:
-        try:
-            logger.debug(f"[llm] отправляем запрос к модели {model}")
-            response = await client.chat.completions.create(
-                model=model,
-                messages=messages,
-            )
-            answer = response.choices[0].message.content or ""
-            logger.debug(f"[llm] получен ответ от {model}, длина={len(answer)}")
-            return answer
-        except (RateLimitError, APIStatusError) as e:
-            logger.warning(f"[llm] ошибка на {model}: {e.status_code}, пробуем следующую...")
-            await asyncio.sleep(1)
+        for attempt in range(1, MAX_RETRIES + 1):
+            try:
+                logger.debug(f"[llm] запрос к {model} (попытка {attempt}/{MAX_RETRIES})")
+                response = await client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                )
+                answer = response.choices[0].message.content or ""
+                logger.debug(f"[llm] получен ответ от {model}, длина={len(answer)}")
+                return answer
+            except (RateLimitError, APIStatusError) as e:
+                logger.warning(f"[llm] ошибка {e.status_code} на {model} (попытка {attempt}/{MAX_RETRIES})")
+                if attempt < MAX_RETRIES:
+                    await asyncio.sleep(RETRY_DELAY)
+        logger.warning(f"[llm] {model} недоступна, пробуем следующую...")
 
     return "Сервис временно перегружен. Попробуйте через минуту."
