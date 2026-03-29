@@ -58,12 +58,12 @@ PDF-файл
 | Компонент | Инструмент |
 |---|---|
 | Telegram-бот | aiogram 3 |
-| Языковая модель | OpenRouter (цепочка из нескольких free-моделей с fallback) |
+| Языковая модель | Gemma 3 12B через Ollama (локально) |
 | Vision LLM (анализ картинок) | Gemma 3 12B через Ollama (локально) |
 | Векторная база знаний | ChromaDB |
 | RAG-пайплайн | LangChain |
-| Эмбеддинги | sentence-transformers (all-MiniLM-L6-v2) |
-| LLM-клиент | openai SDK (с кастомным base_url) |
+| Эмбеддинги | sentence-transformers (paraphrase-multilingual-MiniLM-L12-v2) |
+| LLM-клиент | openai SDK (с кастомным base_url для Ollama) |
 | Извлечение текста из PDF | PyMuPDF (fitz) |
 | Язык | Python 3.11+ |
 
