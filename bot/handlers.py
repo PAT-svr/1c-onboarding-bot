@@ -6,7 +6,7 @@ from aiogram.filters import Command
 from aiogram.types import Message
 
 from bot.keyboards import get_main_keyboard
-from rag.llm import ask
+from rag.llm import ask, clear_history
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -40,6 +40,13 @@ async def cmd_help(message: Message):
     await message.answer(HELP_TEXT)
 
 
+@router.message(Command("clear"))
+async def cmd_clear(message: Message):
+    clear_history(message.from_user.id)
+    logger.info(f"[/clear] user_id={message.from_user.id} история очищена")
+    await message.answer("История диалога очищена.")
+
+
 @router.message()
 async def handle_question(message: Message):
     if not message.text:
@@ -58,7 +65,7 @@ async def handle_question(message: Message):
     )
 
     try:
-        answer = await ask(message.text)
+        answer = await ask(message.text, message.from_user.id)
         logger.info(f"[ответ] user_id={message.from_user.id} answer_len={len(answer)}")
         await message.answer(answer)
     except Exception as e:

@@ -4,13 +4,12 @@ import os
 import chromadb
 from chromadb.utils import embedding_functions
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import Docx2txtLoader, PyPDFLoader, TextLoader
+from langchain_community.document_loaders import TextLoader
 
-KNOWLEDGE_BASE_PATH = "./knowledge_base"
 PARSED_DOCS_PATH = "./parsed_docs"
 CHROMA_PATH = "./chroma_db"
 COLLECTION_NAME = "1c_knowledge_base"
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+EMBEDDING_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 100
 
@@ -18,22 +17,9 @@ CHUNK_OVERLAP = 100
 def load_documents():
     documents = []
 
-    pdf_files = glob.glob(os.path.join(KNOWLEDGE_BASE_PATH, "**/*.pdf"), recursive=True)
-    docx_files = glob.glob(os.path.join(KNOWLEDGE_BASE_PATH, "**/*.docx"), recursive=True)
-
-    for path in pdf_files:
-        print(f"Загружаю PDF: {path}")
-        loader = PyPDFLoader(path)
-        documents.extend(loader.load())
-
-    for path in docx_files:
-        print(f"Загружаю DOCX: {path}")
-        loader = Docx2txtLoader(path)
-        documents.extend(loader.load())
-
     txt_files = glob.glob(os.path.join(PARSED_DOCS_PATH, "**/*.txt"), recursive=True)
     for path in txt_files:
-        print(f"Загружаю TXT (parsed): {path}")
+        print(f"Загружаю TXT: {path}")
         loader = TextLoader(path, encoding="utf-8")
         documents.extend(loader.load())
 
@@ -45,7 +31,7 @@ def main():
     documents = load_documents()
 
     if not documents:
-        print("Документы не найдены. Добавьте PDF или .docx файлы в папку knowledge_base/ и запустите снова.")
+        print("Документы не найдены. Добавьте .txt файлы в папку parsed_docs/ и запустите снова.")
         return
 
     print(f"Загружено страниц: {len(documents)}")

@@ -3,7 +3,7 @@ from chromadb.utils import embedding_functions
 
 CHROMA_PATH = "./chroma_db"
 COLLECTION_NAME = "1c_knowledge_base"
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+EMBEDDING_MODEL = "paraphrase-multilingual-MiniLM-L12-v2"
 
 _client = None
 _collection = None
